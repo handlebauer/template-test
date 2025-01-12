@@ -4,6 +4,8 @@
 __*
 .env*
 !.env.local.sample
+supabase
+components.json
 
 # dependencies
 /node_modules
