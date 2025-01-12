@@ -1,0 +1,388 @@
+# Project
+
+# General Guidelines
+- At the end of an interaction, summarize the entire interaction's edits/updates in 40-50 characters
+- The summary should be in the form of a Conventional Commit:
+  ```
+  feat: implement password forgot flow
+  fix: broken chat scroll on mobile
+  chore: bump shadcn to latest
+  ```
+
+# Code Guidelines
+- Use early returns whenever possible to make the code more readable.
+- Use descriptive variable and function names.
+- Handlers should be named with a “handle” prefix, like “handleClick” for onClick
+- Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError)
+
+# Technical Stack
+- Frontend Framework: Next.js 15 with TypeScript
+- Styling: Tailwind CSS
+- Database: Supabase
+- Authentication: Supabase Auth
+- UI Components: Radix UI, shadcn/ui
+- Deployment: Vercel
+
+## Environment Setup
+- Required environment variables:
+  ```env
+  NEXT_PUBLIC_SUPABASE_ANON_KEY=
+  NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY=
+  ```
+- Development commands:
+  ```bash
+  bun dev          # Start development server
+  bun build        # Create production build
+  bun run test     # Run all tests
+  bun test:watch   # Run tests in watch mode for development
+  bun run db:typegen  # Generate TypeScript types from Supabase schema
+  bun run db:init     # Reset DB and regenerate types
+  bun run db:migrate  # Run migrations and regenerate types
+  ```
+
+## Composer Mode Specific Guidelines
+- When using Composer mode, provide clear, natural language descriptions of desired changes or additions
+- If a prompt ends with the string `Think Hard`, reason about the task at hand carefully:
+  - Generate at least 500 characters and then move on to the solution
+- After each operation in a multi-file operation, specify the relationship of the operation to the next file involved
+- For refactoring tasks, describe the current code structure and the desired outcome
+- When addressing errors, provide details about the error message and the surrounding code context
+- When implementing a feature, follow this data flow architecture:
+  - User interaction triggers an event handler in a Client Component
+  - Event handler calls server-side logic (through appropriate method)
+  - Server validates input and performs necessary data operations
+  - Server revalidates affected routes and data as needed
+  - Client receives updated data through revalidation
+  - UI automatically re-renders with fresh data
+  - For client-side state:
+    - Event handler updates Zustand store directly
+    - Store changes trigger subscribed components to re-render
+  - For optimistic updates:
+    - Update local state immediately
+    - Revert on error from server
+    - Confirm on successful server response
+
+## Database
+- All Supabase clients are already configured in `./src/lib/supabase`
+- Generate a new migration file when making changes to the database schema
+- After generating a new migration file, run `bun run db:migrate`
+- Database types can be found here: `./src/lib/supabase/types.ts`:
+  - Use these types in the rest of the application code when possible
+- Database commands:
+  ```bash
+  bun run db:typegen  # Generate TypeScript types from Supabase schema
+  bun run db:init     # Reset DB and regenerate types
+  bun run db:migrate  # Run migrations and regenerate types
+  ```
+- Use Zod schemas to validate data exchanged with the database
+
+## Testing
+- Use Vitest for unit and integration testing
+- Place test files adjacent to components with `.test.tsx` extension
+- Follow AAA (Arrange-Act-Assert) pattern in tests:
+  ```typescript
+  test('user login flow', () => {
+    // Arrange
+    const mockUser = { email: 'test@example.com' };
+
+    // Act
+    const result = loginUser(mockUser);
+
+    // Assert
+    expect(result.success).toBe(true);
+  });
+  ```
+- Maintain minimum 80% test coverage
+- Test execution commands:
+  ```bash
+  bun run test     # Run all tests
+  bun test:watch   # Run tests in watch mode for development
+  ```
+- Essential test types to implement:
+  - Unit tests for utility functions and hooks
+  - Integration tests for component interactions
+  - Server action tests
+  - End-to-end tests for critical user flows
+- Mock external dependencies and API calls using Vitest mocking
+- Test error states and edge cases thoroughly
+- Use test-utils.tsx for common testing utilities and custom matchers
+
+## Next 15
+- Implement the App Router, the recommended routing system for Next.js 15
+- Use Server Components by default (use Client Components only when necessary for interactivity or client-side state)
+- Use Server Actions for handling data mutations and form submissions
+- Implement proper caching strategies using Next.js built-in caching mechanisms
+- Ensure all components and pages are accessible, following WCAG guidelines
+- Use environment variables for configuration following Next.js conventions
+- Avoid unnecessary re-renders by memoizing components (React.memo) when appropriate
+- Avoid unnecessary re-renders by using useMemo and useCallback hooks when appropriate
+- Fetch external data in parallel whenever possible
+- Provide clear, concise comments explaining particularly complex logic or design decisions
+
+## Data Fetching
+- Fetch data directly in `use server` components only if you need server-side rendering and caching - this should be your default choice for most data fetching
+- Fetch data directly in `use client` components only if you need real-time updates or the data is specific to client-side state
+- Fetch data with Server Actions only if you're handling form submissions or mutations that are directly tied to user interactions
+- Fetch data with Route Handlers only if you need a middleware layer to handle external services or process sensitive data
+
+## Code Structure and Syntax
+- Assume the app directory as well as all other directories are located in the `./src` directory
+- Use the `app` directory for all components and pages
+- Implement the following file conventions in the `app` directory:
+  - `layout.tsx`: For shared UI across multiple pages
+  - `page.tsx`: For unique page content
+  - `loading.tsx`: For loading UI
+  - `error.tsx`: For error handling UI
+  - `not-found.tsx`: For 404 pages
+- Use Server Components by default. Add the `'use client'` directive only when creating Client Components
+- Define and export React components using the `function` keyword:
+  ```tsx
+  interface ComponentProps {
+    // Props definition
+  }
+
+  export function Component(({ propA, propB }): ComponentProps) {
+    // Component logic
+  }
+  ```
+
+## Routing and Navigation
+- Implement nested routing using folder structure in the `app` directory
+- Use the `<Link>` component from `next/link` for client-side navigation
+  ```tsx
+  import Link from 'next/link'
+
+  <Link href="/about">About</Link>
+  ```
+- Implement dynamic routes using folder names with square brackets (e.g., `[id]`)
+- Use `generateStaticParams` for generating static paths in dynamic routes
+
+## Data Fetching and API Routes
+- Use Server Components and the `fetch` API for data fetching
+- Use Next.js automatic request deduplication whenever possible:
+  ```tsx
+  async function fetchData() {
+    // Optionally enable revalidation:
+    // const next = { revalidate: 3600 }
+    const res = await fetch('https://api.example.com/data>', /* revalidatate if desired */);
+
+    if (!res.ok) {
+      const errorMessage = `API request failed: ${res.status} (${res.statusText})`;
+      throw new Error(errorMessage)
+    }
+
+    const data = await res.json()
+    return data
+  }
+
+  export default async function Page() {
+    const data = await fetchData()
+    // Render component using data
+    return <div>{/* Component JSX */}</div>
+  }
+  ```
+- Implement Server Actions for data mutations:
+  ```tsx
+  'use server'
+
+  import { revalidatePath } from 'next/cache'
+
+  export async function updateData(formData: FormData) {
+    // Update data in your database
+    revalidatePath('/data')
+  }
+  ```
+- Use route handlers (route.ts) for API routes in the App Router.
+- Implement Static Site Generation (SSG) and Server-Side Rendering (SSR) using App Router conventions when appropriate
+
+## Simple State Management and Interactivity
+- Use Server Actions for form submissions and data mutations:
+  ```tsx
+  import { updateData } from './actions';
+
+  export default function Form() {
+    return (
+      <form action={updateData}>
+        <input type="text" name="data" />
+        <button type="submit">Update</button>
+      </form>
+    );
+  }
+  ```
+- Use the `useState` and `useEffect` hooks in Client Components for local state and side effects
+- When state and side-effects become complex, implement React hooks for client-side when necessary
+- When state and side-effect logic require many LOC or are repeated across components, extract them into a React hook
+
+## State Management
+- Use a Zustand store for global state:
+  ```tsx ./src/lib/store.ts
+  interface UserState {
+    user: User | null;
+    setUser: (user: User | null) => void;
+  }
+
+  export const useUserStore = create<UserState>((set) => ({
+    user: null,
+    setUser: (user) => set({ user }),
+  }));
+- Subscribe to Zustand store in components
+  ```tsx
+  function UserProfile() {
+    // ✅ GOOD: Select primitive values individually
+    const name = useStore(state => state.user.name);
+    const email = useStore(state => state.user.email);
+    return <div>{name} ({email})</div>;
+  }
+
+  function TodoList() {
+    // ✅ GOOD: Selective store subscription with shallow comparison
+    const todos = useStore(
+        state => state.todos,
+        shallow  // Prevent re-renders if array reference changes but contents same
+    );
+
+    // Get store actions
+    const updateTodo = useStore(state => state.updateTodo);
+
+    // Memoize the update handler
+    const handleUpdate = useCallback((id, data) => {
+        updateTodo(id, data);
+    }, [updateTodo]);
+
+    // Memoize expensive filtering/sorting
+    const sortedTodos = useMemo(() => {
+        return [...todos].sort((a, b) => b.createdAt - a.createdAt);
+    }, [todos]);
+
+    return (
+        <div>
+        {sortedTodos.map(todo => (
+            <TodoItem
+            key={todo.id}
+            todo={todo}
+            onUpdate={handleUpdate}  // Stable function reference
+            />
+        ))}
+        </div>
+    );
+  }
+  ```
+- Implement proper state initialization in Server Components
+- When able, use generated Supabase types from `src/lib/supabase/types.ts` when defining state interfaces and types
+- The store is kept in a dedicated file (`src/lib/store/index.ts`)
+- The store types are kept in a dedicated file (`src/lib/store/types.ts`)
+
+## UI Components
+- Whenever building a UI component, consider using a pre-built shadcn-ui component
+- Install shadcn components with `bun run shadcn:add <component_name> ...`
+
+## Styling
+- Use Tailwind CSS classes exclusively for styling; no inline styles:
+  ```tsx
+  <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+    {/* Component content */}
+  </div>
+  ```
+- When using the `cn` classnames utility, do not apply them inline (pass styles as a variable)
+- Create custom Tailwind classes in the `tailwind.config.js` file for reusable styles
+- Use CSS Modules for component-specific styles when needed
+- Ensure proper color contrast ratios (minimum 4.5:1)
+
+## Performance Optimization
+- Implement automatic static optimization for eligible pages
+- Use dynamic imports for code splitting where possible:
+  ```tsx
+  import dynamic from 'next/dynamic';
+
+  const DynamicComponent = dynamic(() => import('../components/DynamicComponent'));
+  ```
+- Utilize the Image component from `next/image` for automatic image optimization:
+  ```tsx
+  import Image from 'next/image';
+
+  <Image src="/image.jpg" alt="Description" width={500} height={300} />
+  ```
+- Implement proper caching strategies using the Data Cache and Full Route Cache
+- Use Next.js 15's built-in caching and revalidation features for optimal performance:
+  ```tsx
+  import { unstable_cache } from 'next/cache';
+
+  const getCachedUser = unstable_cache(
+    async (id: string) => getUser(id),
+    ['user-cache'],
+    { revalidate: 3600 } // Revalidate every hour
+  );
+  ```
+- Use on-demand revalidation when appropriate:
+  ```tsx
+  import { revalidatePath, revalidateTag } from 'next/cache';
+
+  export async function updateData() {
+    // Update data in your database
+    revalidatePath('/data'); // Revalidate a specific path
+    revalidateTag('data-tag'); // Revalidate all entries with this tag
+  }
+  ```
+- Implement parallel data fetching for improved performance:
+  ```typescript
+  async function ParallelDataFetch() {
+    const dataPromise = fetch('<https://api.example.com/data>');
+    const userPromise = fetch('<https://api.example.com/user>');
+
+    const [data, user] = await Promise.all([
+      dataPromise.then(res => res.json()),
+      userPromise.then(res => res.json())
+    ]);
+
+    return { data, user };
+  }
+  ```
+
+## Error Handling and Loading States
+- Create error.tsx files for error boundaries:
+  ```tsx
+  'use client';
+
+  interface AppErrorInterface {
+    error: Error & { digest?: string };
+    reset: () => void;
+  }
+
+  export function AppError({ error, reset }: AppErrorInterface) {
+    // Do something with `error`
+    return (
+      <div>
+        <h2>Something went wrong!</h2>
+        <button onClick={() => reset()}>Try again</button>
+      </div>
+    );
+  }
+  ```
+- Implement loading.tsx files for managing loading states
+- Use React Suspense for more granular loading states:
+  ```tsx
+  import { Suspense } from 'react';
+
+  export default function Page() {
+    return (
+      <Suspense fallback={<Loading />}>
+        <SomeComponent />
+      </Suspense>
+    );
+  }
+  ```
+- Use Zod for runtime validation and error handling
+- Handle errors at the beginning of functions.
+- Use early returns for error conditions to avoid deeply nested if statements
+
+## SEO and Metadata
+- Use the Metadata API for SEO optimization:
+  ```tsx
+  import type { Metadata } from 'next';
+
+  export const metadata: Metadata = {
+    title: 'Page Title',
+    description: 'Page description',
+  };
+  ```
+- Implement dynamic metadata using generateMetadata for pages with dynamic content.

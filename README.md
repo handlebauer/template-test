@@ -1,36 +1,107 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Next.js Template with Supabase Auth
+
+A modern Next.js 15 template with Supabase authentication, Tailwind CSS, and TypeScript.
+
+## Features
+
+- 🔐 Authentication with Supabase (Email/Password and OAuth)
+- 🎨 Styling with Tailwind CSS
+- 📝 Type-safe with TypeScript
+- 🚀 Next.js 15 App Router
+- 🔄 Real-time auth state sync
+- 🛡️ Protected routes with middleware
 
 ## Getting Started
 
-First, run the development server:
+1. Clone the repository
+2. Install dependencies:
+
+    ```bash
+    bun install
+    ```
+
+3. Set up your Supabase project:
+
+    - Create a new project at [supabase.com](https://supabase.com)
+    - Copy your project URL and anon key
+    - Create a `.env.local` file with:
+        ```env
+        NEXT_PUBLIC_SUPABASE_URL=your-project-url
+        NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+        ```
+
+4. Configure authentication providers:
+
+    - Go to Authentication > Providers in your Supabase dashboard
+    - Enable Email/Password authentication
+    - (Optional) Configure OAuth providers:
+        - GitHub: Add your GitHub OAuth credentials
+        - Google: Add your Google OAuth credentials
+    - Set your site URL and redirect URLs in Authentication > URL Configuration:
+        ```
+        Site URL: http://localhost:3000
+        Redirect URLs:
+        - http://localhost:3000/auth/callback
+        - http://localhost:3000
+        ```
+
+5. Initialize the database:
+
+    ```bash
+    bun run db:init
+    ```
+
+    This will create a demo user with the following credentials:
+
+    ```
+    Email: demo@app.com
+    Password: demo1234
+    ```
+
+6. Start the development server:
+    ```bash
+    bun dev
+    ```
+
+## Authentication Flow
+
+The template includes a complete authentication flow:
+
+1. **Sign In Page** (`/login`):
+
+    - Email/Password authentication
+    - Social authentication (GitHub, Google)
+    - Error handling and loading states
+
+2. **Protected Routes**:
+
+    - Middleware automatically redirects unauthenticated users to login
+    - Real-time session management
+    - Automatic token refresh
+
+3. **Sign Out**:
+    - Clean session termination
+    - Redirect to login page
+
+## Development Commands
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+bun dev          # Start development server
+bun build        # Create production build
+bun run test     # Run all tests
+bun test:watch   # Run tests in watch mode
+bun run db:init  # Reset DB and seed with demo data
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Required environment variables:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+NEXT_PUBLIC_SUPABASE_URL=your-project-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+```
 
-## Learn More
+## License
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
