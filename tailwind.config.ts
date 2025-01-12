@@ -43,6 +43,17 @@ const config = {
                     DEFAULT: 'hsl(var(--card))',
                     foreground: 'hsl(var(--card-foreground))',
                 },
+                popover: {
+                    DEFAULT: 'hsl(var(--popover))',
+                    foreground: 'hsl(var(--popover-foreground))',
+                },
+                chart: {
+                    '1': 'hsl(var(--chart-1))',
+                    '2': 'hsl(var(--chart-2))',
+                    '3': 'hsl(var(--chart-3))',
+                    '4': 'hsl(var(--chart-4))',
+                    '5': 'hsl(var(--chart-5))',
+                },
             },
             borderRadius: {
                 lg: 'var(--radius)',
@@ -54,6 +65,8 @@ const config = {
             },
         },
     },
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    plugins: [require('tailwindcss-animate')],
 } satisfies Config
 
 export default config

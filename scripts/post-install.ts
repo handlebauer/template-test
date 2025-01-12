@@ -1,13 +1,23 @@
 import { $ } from 'bun'
-import { existsSync } from 'node:fs'
+import { existsSync, writeFileSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
 import prompt from 'prompt-sync'
+
+const LOCK_FILE = '.setup-lock'
+
+// Exit early if lock file exists (prevents recursive postinstall)
+if (existsSync(LOCK_FILE)) {
+    process.exit(0)
+}
 
 const promptUser = prompt({ sigint: true })
 
 console.log('🚀 Setting up your project...')
 
 try {
+    // Create lock file to prevent recursive runs
+    writeFileSync(LOCK_FILE, 'locked')
+
     // Check if Supabase is already initialized
     if (!existsSync('./supabase')) {
         console.log('📦 Initializing Supabase...')

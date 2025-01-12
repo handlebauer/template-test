@@ -4,8 +4,11 @@
 __*
 .env*
 !.env.local.sample
+
+# template-related
 supabase
 components.json
+.setup-lock
 
 # dependencies
 /node_modules
