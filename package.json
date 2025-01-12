@@ -13,7 +13,7 @@
         "db:typegen": "bunx supabase gen types typescript --linked > src/lib/supabase/types.ts",
         "db:init": "yes | bunx supabase db reset --linked && bun run db:typegen",
         "shadcn:add": "bunx --bun shadcn@latest add",
-        "post-create": "bun run ./post-create.js"
+        "postinstall": "bun run ./scripts/post-install.ts"
     },
     "dependencies": {
         "@radix-ui/react-dropdown-menu": "^2.1.4",
